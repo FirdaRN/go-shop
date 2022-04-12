@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -22,20 +23,26 @@ type AppConfig struct {
 	AppPort string
 }
 
-func (server *Server) Initialize(appConfig AppConfig) {
-	// func (server *Server) Initialize(Dbdriver, DbUser, DbPassword, DbPort, DbHost, DbName string) {
+type DBConfig struct {
+	DBHost     string
+	DbUser     string
+	DbPassword string
+	DbName     string
+	DBPort     string
+	DBDriver   string
+}
+
+func (server *Server) Initialize(appConfig AppConfig, dbConfig DBConfig) {
 	fmt.Println("Initializing server..." + appConfig.AppName)
-	// var err error
+	var err error
 
-	// if Dbdriver == "mysql" {
-	// 	DBURL := "mysql://" + DbUser + ":" + DbPassword + "@" + DbHost + ":" + DbPort + "/" + DbName
-	// 	server.DB, err = gorm.Open(Dbdriver, DBURL)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// }
+	if dbConfig.DBDriver == "mysql" {
+		server.DB, err = gorm.Open(mysql.Open(fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbConfig.DbUser, dbConfig.DbPassword, dbConfig.DBHost, dbConfig.DBPort, dbConfig.DbName)), &gorm.Config{})
+	}
 
-	// server.DB.Debug().AutoMigrate(&User{}, &Post{}) //database migration
+	if err != nil {
+		panic(err)
+	}
 
 	server.Router = mux.NewRouter()
 	server.initializeRoutes()
@@ -57,6 +64,7 @@ func getEnv(key, fallback string) string {
 func Run() {
 	var server = Server{}
 	var appConfig = AppConfig{}
+	var dbConfig = DBConfig{}
 
 	err := godotenv.Load()
 	if err != nil {
@@ -67,6 +75,13 @@ func Run() {
 	appConfig.AppEnv = getEnv("APP_ENV", "development")
 	appConfig.AppPort = getEnv("APP_PORT", "8080")
 
-	server.Initialize(appConfig)
+	dbConfig.DBHost = getEnv("DB_HOST", "127.0.0.1")
+	dbConfig.DbUser = getEnv("DB_USER", "root")
+	dbConfig.DbPassword = getEnv("DB_PASSWORD", "")
+	dbConfig.DbName = getEnv("DB_NAME", "goshop")
+	dbConfig.DBPort = getEnv("DB_PORT", "3306")
+	dbConfig.DBDriver = getEnv("DB_DRIVER", "mysql")
+
+	server.Initialize(appConfig, dbConfig)
 	server.Run(":" + appConfig.AppPort)
 }
