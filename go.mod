@@ -9,6 +9,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
+	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/unrolled/render v1.4.1 // indirect
 	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea // indirect
 	gorm.io/driver/mysql v1.3.3 // indirect

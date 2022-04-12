@@ -34,6 +34,13 @@ type DBConfig struct {
 
 func (server *Server) Initialize(appConfig AppConfig, dbConfig DBConfig) {
 	fmt.Println("Initializing server..." + appConfig.AppName)
+
+	server.initializeDB(dbConfig)
+	server.initializeRoutes()
+}
+
+func (server *Server) initializeDB(dbConfig DBConfig) {
+	fmt.Println("Initializing database...")
 	var err error
 
 	if dbConfig.DBDriver == "mysql" {
@@ -44,8 +51,15 @@ func (server *Server) Initialize(appConfig AppConfig, dbConfig DBConfig) {
 		panic(err)
 	}
 
-	server.Router = mux.NewRouter()
-	server.initializeRoutes()
+	for _, model := range RegisterModels() {
+		err = server.DB.Debug().AutoMigrate(model.Model)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	fmt.Println("Database initialized")
 }
 
 func (server *Server) Run(addr string) {

@@ -1,8 +1,12 @@
 package app
 
-import "github.com/FirdaRN/go-shop/app/controllers"
+import (
+	"github.com/FirdaRN/go-shop/app/controllers"
+	"github.com/gorilla/mux"
+)
 
 func (server *Server) initializeRoutes() {
+	server.Router = mux.NewRouter()
 	server.Router.HandleFunc("/", controllers.Home).Methods("GET")
 	// server.Router.HandleFunc("/users", server.createUser).Methods("POST")
 	// server.Router.HandleFunc("/users", server.getUsers).Methods("GET")
